@@ -87,9 +87,12 @@ plot1 <- sum_by_country_by_interval %>%
   theme(panel.background = element_rect(fill=viridis(100)[1],
                                         colour=viridis(100)[1]),
         panel.grid = element_blank(),
+        axis.text.x = element_text(size=13),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_text(size=15),
         legend.position = 'top') +
   coord_equal() +
-  labs(fill = 'Proportion of ratings', y = '', x = 'Wine ratings out of 100')
+  labs(fill = 'Proportion of ratings', y = '', x = 'Number of points\nrated out of 100')
 plot1
 ```
 
@@ -111,7 +114,8 @@ plot2 <- wine_data %>% count(country) %>%
         axis.text.y = element_blank(),
         panel.grid.major.x= element_line(color = 'grey', 
                                          lineend = 'round',
-                                         linetype = 'dashed')) +
+                                         linetype = 'dashed'),
+        axis.title.x = element_text(size = 15)) +
   coord_flip() +
   labs(y = 'Number of ratings', x = '')
 plot2
@@ -122,7 +126,7 @@ plot2
 put em together
 
 ``` r
-plot3 <- ggarrange(plot1, plot2, nrow = 1)
+plot3 <- egg::ggarrange(plot1, plot2, nrow = 1)
 ```
 
 ![](week22_wine_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
@@ -131,7 +135,7 @@ Save
 plot
 
 ``` r
-png('plots/week22_wine.png', units = 'in', height = 10, width = 8, res = 300)
+png('plots/week22_wine.png', units = 'in', height = 14, width = 12, res = 300)
 print(plot3)
 dev.off()
 ```
