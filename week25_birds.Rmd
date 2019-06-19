@@ -128,7 +128,7 @@ bird_counts_rank %>%
             title = element_text(face = 'bold'),
             text = element_text(family = font)) +
       labs(x = 'Year', y = 'Rank', 
-           title = 'Most common bird sightings',
+           title = 'Most common xmas bird sightings',
            subtitle = 'in Hamilton, Onatrio. 1997-2017')
     }
 ```
