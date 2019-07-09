@@ -1,0 +1,91 @@
+---
+title: "week27_soccer"
+output: html_document
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+# Setup
+
+```{r}
+library(tidyverse)
+library(RColorBrewer)
+library(LaCroixColoR)
+library(extrafont)
+
+# Read in data
+wwc_outcomes <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-07-09/wwc_outcomes.csv")
+squads <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-07-09/squads.csv")
+codes <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-07-09/codes.csv")
+```
+
+
+# Explortation
+```{r}
+wwc_outcomes %>% group_by(team, year) %>%  summarize() %>% mutate(count = n()) %>% 
+  group_by(team) %>% filter(count == 8) %>% summarize()
+```
+
+# Prepare data
+
+I want the most successful teams to show up at the top, and then decrease in success towards bottom
+of graph.
+
+I'll define 'success' as number of wins over the entire dataset
+
+```{r}
+# arrange by cummulative wins over all seasons
+team_order <- wwc_outcomes %>% 
+  group_by(team) %>%
+  summarize(cum_win = sum(win_status == 'Won')) %>%
+  arrange(desc(cum_win))
+
+
+wwc_outcomes <- wwc_outcomes %>%
+  
+  # filter to top 10 teams
+  filter(team %in% team_order$team[1:10]) %>%
+  
+  # reorder factors for order of appearance on graph
+  mutate(team = factor(team, levels = team_order$team[1:10]),
+         win_status = factor(win_status, levels = c('Won', 'Tie', 'Lost')),
+         round = factor(round, levels = c('Group', 'Round of 16', 'Quarter Final', 'Semi Final', 
+                                          'Third Place Playoff', 'Final'))) %>%
+  
+  # divide 'round = group' into however many grou pmatches were played that year per team
+  arrange(year, team, round)  %>%
+  group_by(year, team) %>%
+  mutate(round = factor(ifelse(round == 'Group', 
+                               paste(round, row_number()), 
+                               as.character(round)),
+                        levels = c('Group 1', 'Group 2', 'Group 3',  'Round of 16', 
+                                   'Quarter Final', 'Semi Final', 'Third Place Playoff', 'Final'))) 
+
+# create a ranking number to plot on the axis
+wwc_outcomes %>%
+  ungroup() %>%
+  arrange(year, team, round) %>%
+  group_by(year, team) %>%
+  mutate(rank = row_number()) %>%
+  
+  ggplot(aes(x = win_status, y = rank, color = round)) +
+  geom_point() +
+  facet_grid(rows = vars(team), cols = vars(year)) +
+  coord_flip() +
+  theme_bw() + 
+  theme(panel.spacing = unit(0, "lines") )
+
+
+  
+wwc_outcomes %>%
+  ggplot(aes(x = win_status, y = round, fill = round)) + 
+  geom_point(shape = 21, size = 3) +
+  facet_grid(year~team, scales = 'free_x', strip.position = "left") +
+  coord_flip() +
+  theme(strip.background = element_blank(),
+        strip.placement = "outside")
+  
+```
+
